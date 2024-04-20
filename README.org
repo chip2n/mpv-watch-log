@@ -1,0 +1,10 @@
+* mpv-watch-log
+
+Script for ~mpv~ that records every time interval watched and resumes playback
+at the earliest unwatched video segment.
+
+** Usage
+
+#+begin_src bash
+mpv --script=watch-log.lua --script-opts=watch-log-storage=watch.log <VIDEO_PATH>
+#+end_src
