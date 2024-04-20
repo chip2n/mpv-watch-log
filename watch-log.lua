@@ -52,10 +52,15 @@ function on_file_loaded()
    local contents = f:read("*a")
    f:close()
 
+   local first_row = true
    for s in contents:gmatch("[^\r\n]+") do
-      local nums = {}
-      for n in s:gmatch("%S+") do table.insert(nums, n) end
-      add_watched(tonumber(nums[1]), tonumber(nums[2]))
+      if first_row then
+         first_row = false
+      else
+         local nums = {}
+         for n in s:gmatch("%S+") do table.insert(nums, n) end
+         add_watched(tonumber(nums[1]), tonumber(nums[2]))
+      end
    end
 
    -- Go to the earliest end point in the log
@@ -70,6 +75,8 @@ function on_end_file()
 
    os.execute(string.format("mkdir -p %s", o.storage))
    local h = assert(io.open(o.storage .. file_path_hash, "w"))
+
+   h:write(file_path .. "\n")
 
    for _, entry in ipairs(watched_positions) do
       h:write(entry[1] .. " " .. entry[2] .. "\n")
