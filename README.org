@@ -6,5 +6,8 @@ at the earliest unwatched video segment.
 ** Usage
 
 #+begin_src bash
-mpv --script=watch-log.lua --script-opts=watch-log-storage=watch.log <VIDEO_PATH>
+mpv --script=watch-log.lua --script-opts=watch-log-storage=~/.config/mpv/watch-log/ <VIDEO_PATH>
 #+end_src
+
+Each file name will be hashed using MD5 and stored in the provided storage
+directory (which defaults to =~/.config/mpv/watch-log/=).

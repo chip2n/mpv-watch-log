@@ -1,9 +1,11 @@
 watched_positions = {}
 start_pos = 0
 curr_pos = 0
+file_path = nil
+file_path_hash = nil
 
 local o = {
-    storage = "~/.config/mpv/watch.log",
+    storage = "~/.config/mpv/watch-log/",
 }
 
 opt = require "mp.options"
@@ -11,11 +13,11 @@ opt.read_options(o, "watch-log")
 
 o.storage = mp.command_native({"expand-path", o.storage})
 
-function format_time(pos)
-    local hours = math.floor(pos/3600)
-    local minutes = math.floor((pos % 3600) / 60)
-    local seconds = math.floor((pos % 60))
-    return string.format("%02d:%02d:%02d", hours, minutes, seconds)
+function hash(str)
+    local pipe = io.popen('echo -n "' .. str .. '" | md5sum')
+    local result = pipe:read("*all")
+    pipe:close()
+    return result:match("%S+")
 end
 
 function add_watched(start_pos, end_pos)
@@ -41,8 +43,12 @@ function on_file_loaded()
    local pos = mp.get_property_number("time-pos")
    start_pos = pos
    curr_pos = pos
+   file_path = mp.get_property("path")
+   file_path_hash = hash(file_path)
 
-   local f = assert(io.open(o.storage, "r"))
+   local f = io.open(o.storage .. file_path_hash, "r")
+   if f == nil then return end
+
    local contents = f:read("*a")
    f:close()
 
@@ -62,7 +68,8 @@ end
 function on_end_file()
    add_watched(start_pos, curr_pos)
 
-   local h = assert(io.open(o.storage, "w"))
+   os.execute(string.format("mkdir -p %s", o.storage))
+   local h = assert(io.open(o.storage .. file_path_hash, "w"))
 
    for _, entry in ipairs(watched_positions) do
       h:write(entry[1] .. " " .. entry[2] .. "\n")
